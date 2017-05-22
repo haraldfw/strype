@@ -6,16 +6,9 @@ def read_config():
         return json.loads(f.read())
 
 
-def read_property(key, default, config_dict):
-    try:
-        return config_dict[key]
-    except KeyError:
-        return default
-
-
 class Config:
     audio_device = -1
 
     def __init__(self):
         c = read_config()
-        self.audio_device = read_property('audio-device', 0, c)
+        self.audio_device = c.get('audio-device', 0)
