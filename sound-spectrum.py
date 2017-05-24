@@ -1,6 +1,5 @@
 import struct
 
-import math
 import matplotlib.animation as animation
 import matplotlib.pyplot as plt
 import numpy as np
@@ -18,21 +17,6 @@ BUF_SIZE = 4 * nFFT
 FORMAT = pyaudio.paInt16
 CHANNELS = 1
 RATE = 44100
-
-
-def fft(data=None, trim_by=10, log_scale=False, div_by=100):
-    left, right = np.split(np.abs(np.fft.fft(data)), 2)
-    ys = np.add(left, right[::-1])
-    if log_scale:
-        ys = np.multiply(20, np.log10(ys))
-    xs = np.arange(BUF_SIZE / 2, dtype=float)
-    if trim_by:
-        i = int((BUF_SIZE / 2) / trim_by)
-        ys = ys[:i]
-        xs = xs[:i] * RATE / BUF_SIZE
-    if div_by:
-        ys = ys / float(div_by)
-    return xs, ys
 
 
 def animate_single(i, line, stream, wf, max_y):
@@ -92,7 +76,7 @@ def main():
     # Frequency range
     x_f = 1.0 * np.arange(-nFFT / 2 + 1, nFFT / 2) / nFFT * RATE
     ax = fig.add_subplot(111, title=TITLE, xlim=(0, RATE / 2),
-                         ylim=(0, 2 * np.pi * nFFT ** 2 / RATE))
+                         ylim=(-0.1, 2 * np.pi * nFFT ** 2 / RATE))
     ax.set_yscale('symlog', linthreshy=(nFFT ** 0.5) / 100)
 
     line, = ax.plot(x_f, np.zeros(nFFT - 1))

@@ -1,3 +1,7 @@
 {
-  "audio-device": 1
+  "audio-device": 1,
+  "nfft": 256,
+  "channels": 1,
+  "rate": 48000,
+  "bars": 16
 }
