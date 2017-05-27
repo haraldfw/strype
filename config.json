@@ -1,7 +1,10 @@
 {
   "audio-device": 1,
-  "nfft": 256,
-  "channels": 1,
-  "rate": 48000,
-  "bars": 16
+  "channels": 2,
+  "rate": 44100,
+  "bars": 32,
+  "chunk_size": 2048,
+  "min_frequency": 150,
+  "max_frequency": 5000,
+  "decay": 0.9
 }

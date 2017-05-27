@@ -1,41 +1,49 @@
-import matplotlib.animation as animation
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib import animation
 
 
 class Plotter:
-
-    func = None
-    _rects = []
+    _data_get = None
+    _heights = []
     _config = None
+    _rects = None
 
     def __init__(self, func, config):
-        self.get_data = func
+        """
+         :type config: config.Config
+        """
+        self._data_get = func
         self._config = config
-        self._rects = np.zeros(self._config.bars)
+        self._heights = np.zeros(self._config.bars)
+        self._rects = plt.bar(np.arange(self._config.bars), self._heights, align='center',
+                              color='#b8ff5c', width=0.9)
+        self._rs = [r for r in self._rects]
 
-    def animate(self):
-        data = self.func()
-        fig, ax = plt.subplots()
+    def init(self):
+        return self._rs
 
-        i = 0
+    def animate(self, i):
+        data = self._data_get()
 
-
-
-    def animate(i, ):
-        for rect, yi in zip(rects, data[i]):
+        for rect, yi in zip(self._rs, data):
             rect.set_height(yi)
-        line.set_data(x, data[i])
-        return rects, line
+        return self._rects
 
     def start(self):
-        anim = animation.FuncAnimation(
-            fig, self.animate, frames=len(data), interval=40)
+        plt.tick_params(axis='x', colors='#072b57')
+        plt.tick_params(axis='y', colors='#072b57')
+        plt.xlabel('freq', color='#072b57')
+        plt.ylabel('level', color='#072b57')
+        plt.ylim(0, 1)
 
-        frames = None
-        wf = None
-        ani = animation.FuncAnimation(
-            fig, animate_single, frames,
-            init_func=lambda: init(line), fargs=(line, stream, wf, max_y),
-            interval=1000.0 / FPS, blit=True
-        )
+        dpi = plt.rcParams['figure.dpi']
+        plt.rcParams['savefig.dpi'] = dpi
+        plt.rcParams["figure.figsize"] = (1280.0 / dpi, 720.0 / dpi)
+
+        fig = plt.figure()
+        anim = animation.FuncAnimation(fig, self.animate, init_func=self.init, frames=200,
+                                       interval=20,
+                                       blit=True)
+
+        plt.show()

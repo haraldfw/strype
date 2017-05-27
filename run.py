@@ -1,35 +1,39 @@
-import audio_analysis
+import pyaudio
+
 from audio import Audio
 from audio_analysis import Analyzer
 from config import Config
-import pyaudio
-
 from plotter import Plotter
-
+from prettyfier import Prettyfier
 
 analyzer = None
 audio = None
+pretty = None
 
 
 def main():
-    global audio, analyzer
+    global audio, analyzer, pretty
     config = Config()
-    print(vars(config))
     p = pyaudio.PyAudio()
-    dev_amount = p.get_device_count()
-    for i in range(dev_amount):
+    for i in range(p.get_device_count()):
         print(p.get_device_info_by_index(i))
 
     audio = Audio(config)
     analyzer = Analyzer(config)
-    plotter = Plotter(get_parsed_data, config)
+    pretty = Prettyfier(config)
 
+    Plotter(get_parsed_data, config).start()
+
+    # done
     audio.close()
 
 
 def get_parsed_data():
-    global audio, analyzer
-    return analyzer.parse(audio.max_y, *audio.read())
+    global audio, analyzer, pretty
+    data = analyzer.analyze(audio.read())
+    pretty.update_heights(data)
+    return pretty.get_heights()
+
 
 if __name__ == '__main__':
     main()
