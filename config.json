@@ -3,6 +3,8 @@
   "channels": 2,
   "rate": 44100,
   "bars": 32,
+  "leds_per_bar": 25,
+  "spacer_leds": 4,
   "chunk_size": 2048,
   "min_frequency": 150,
   "max_frequency": 5000,
