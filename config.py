@@ -1,4 +1,6 @@
+import atexit
 import json
+import threading
 
 
 def read_config():
@@ -7,16 +9,60 @@ def read_config():
 
 
 class Config:
+    def __init__(self, c=None):
+        if not c:
+            c = read_config()
+            self._scheduler = Scheduler(self.update)
+        self.audio_device = c['audio-device']
+        self.channels = c['channels']
+        self.rate = c['rate']
+        self.bars = c['bars']
+        self.leds_per_bar = c['leds_per_bar']
+        self.spacer_leds = c['spacer_leds']
+        self.chunk_size = c['chunk_size']
+        self.min_frequency = c['min_frequency']
+        self.max_frequency = c['max_frequency']
+        self.decay = c['decay']
+        self.colors = ColorConfig(c['color_modes'])
+        self.active_color_mode = c['active_color_mode']
+        self.color_tick_mode = c['color_tick_mode']
+        self.config_update_interval = c['config_update_interval']
 
-    def __init__(self):
+    def update(self):
         c = read_config()
-        self.audio_device = c.get('audio-device', 0)
-        self.channels = c.get('channels', 0)
-        self.rate = c.get('rate', 0)
-        self.bars = c.get('bars', 0)
-        self.leds_per_bar = c.get('leds_per_bar', 0)
-        self.spacer_leds = c.get('spacer_leds', 0)
-        self.chunk_size = c.get('chunk_size', 0)
-        self.min_frequency = c.get('min_frequency')
-        self.max_frequency = c.get('max_frequency')
-        self.decay = c.get('decay')
+        self.__init__(c)
+        self.colors.__init__(c['color_modes'])
+        print('Config updated')
+        return self
+
+    def start_scheduled_updates(self):
+        self._scheduler.run()
+
+
+class ColorConfig:
+    def __init__(self, c):
+        self.static = c['static']
+        self.fade = c['fade']
+        self.rainbow = RainbowConfig(c['rainbow'])
+
+
+class RainbowConfig:
+    def __init__(self, c):
+        self.rate = c['rate']
+        self.lightness = c['lightness']
+        self.saturation = c['saturation']
+
+
+class Scheduler:
+    def __init__(self, update_config):
+        self.update_config = update_config
+        self._running = True
+
+    def run(self):
+        config = self.update_config()
+        if self._running:
+            threading.Timer(config.config_update_interval, self.run).start()
+
+    @atexit.register
+    def stop(self):
+        self._running = False

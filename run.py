@@ -14,6 +14,8 @@ pretty = None
 def main():
     global audio, analyzer, pretty
     config = Config()
+    config.start_scheduled_updates()
+
     p = pyaudio.PyAudio()
     for i in range(p.get_device_count()):
         print(p.get_device_info_by_index(i))

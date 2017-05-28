@@ -1,4 +1,5 @@
 {
+  "config_update_interval": 1,
   "audio-device": 1,
   "channels": 2,
   "rate": 44100,
@@ -8,5 +9,20 @@
   "chunk_size": 2048,
   "min_frequency": 150,
   "max_frequency": 5000,
-  "decay": 0.9
+  "decay": 0.9,
+  "active_color_mode": "static",
+  "color_tick_mode": "tick_per_led",
+  "color_modes": {
+    "static": [0, 127, 255],
+    "rainbow": {
+      "rate": 0.01,
+      "lightness": 0.5,
+      "saturation": 1.0
+    },
+    "fade": [
+      [255, 0, 0],
+      [0, 255, 0],
+      [0, 0, 255]
+    ]
+  }
 }
