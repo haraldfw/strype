@@ -27,6 +27,8 @@ class Config:
         self.active_color_mode = c['active_color_mode']
         self.tick_per_led = c['tick_per_led']
         self.config_update_interval = c['config_update_interval']
+        self.tick_per_time = c['tick_per_time']
+        self.tick_per_column = c['tick_per_column']
 
     def update(self):
         c = read_config()

@@ -12,6 +12,8 @@
   "decay": 0.9,
   "active_color_mode": "static",
   "tick_per_led": 0,
+  "tick_per_time": 1,
+  "tick_per_column": 0,
   "color_modes": {
     "static": [0, 127, 255],
     "rainbow": {

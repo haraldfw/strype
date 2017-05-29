@@ -32,25 +32,24 @@ class LEDController:
         self._pixels.clear()
         while True:
             heights = self._get_data()
+            if self._config.tick_per_time:
+                self._colorer.tick()
             for h, c in zip(heights, self._col_starts):
                 self.display_column(h, c)
             self._pixels.show()
 
     def display_column(self, height, col_start):
-        def led_handle(_i):
-            if _i < height:
-                self.led_on(col_start + _i)
+        # column
+        if self._config.tick_per_column:
+            self._colorer.tick()
+        for i in range(self._config.leds_per_bar):
+            # led
+            if self._config.tick_per_led:
+                self._colorer.tick()
+            if i < height:
+                self.led_on(col_start + i)
             else:
-                self.led_off(col_start + _i)
-
-        if self._config.tick_per_led:
-            for i in range(self._config.leds_per_bar):
-                self._colorer.tick(height)
-                led_handle(i)
-        else:
-            self._colorer.tick(height)
-            for i in range(self._config.leds_per_bar):
-                led_handle(i)
+                self.led_off(col_start + i)
 
     def led_on(self, index):
         self._pixels.set_pixel_rgb(index, self._colorer.r, self._colorer.g, self._colorer.b)
@@ -78,12 +77,12 @@ class LedColorer:
             raise ValueError('Invalid colormode \'' + cm + '\'')
 
         self.r, self.g, self.b = self._config.colors.static
-        self.tick(0)
+        self.tick()
 
-    def _static(self, height):
+    def _static(self):
         pass
 
-    def _rainbow(self, height):
+    def _rainbow(self):
         self.r, self.g, self.b = [c * 255 for c in colorsys.hls_to_rgb(
             self.hue,
             self._config.colors.rainbow.lightness,
@@ -92,8 +91,8 @@ class LedColorer:
         if self.hue > 359:
             self.hue -= 359
 
-    def _fade(self, height):
+    def _fade(self):
         pass
 
-    def tick(self, height):
-        self._color_func(height)
+    def tick(self):
+        self._color_func()
