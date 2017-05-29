@@ -11,7 +11,7 @@
   "max_frequency": 5000,
   "decay": 0.9,
   "active_color_mode": "static",
-  "color_tick_mode": "tick_per_led",
+  "tick_per_led": 0,
   "color_modes": {
     "static": [0, 127, 255],
     "rainbow": {

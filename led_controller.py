@@ -19,8 +19,8 @@ class LEDController:
         self._get_data = func
         self._color = 0
         self._col_starts = None
-        self.pixels = None
-        self.pixels = Adafruit_WS2801.WS2801Pixels(
+        self._pixels = None
+        self._pixels = Adafruit_WS2801.WS2801Pixels(
             (self._config.leds_per_bar + self._config.spacer_leds) * self._config.bars,
             spi=SPI.SpiDev(0, 0), gpio=GPIO)
         self._col_starts = []
@@ -29,39 +29,34 @@ class LEDController:
 
     def start(self):
         print('LEDController started')
+        self._pixels.clear()
         while True:
             heights = self._get_data()
             for h, c in zip(heights, self._col_starts):
                 self.display_column(h, c)
+            self._pixels.show()
 
     def display_column(self, height, col_start):
-        if self._config.color_tick_mode == 'tick_per_led':
+        def led_handle(_i):
+            if _i < height:
+                self.led_on(col_start + _i)
+            else:
+                self.led_off(col_start + _i)
+
+        if self._config.tick_per_led:
             for i in range(self._config.leds_per_bar):
                 self._colorer.tick(height)
-                index = col_start + i
-                if i < height:
-                    self.led_on(index)
-                else:
-                    self.led_off(index)
-            # for led:
-            #     tick color
-            #     display led
-            pass
+                led_handle(i)
         else:
             self._colorer.tick(height)
             for i in range(self._config.leds_per_bar):
-                index = col_start + i
-                if i < height:
-                    self.led_on(index)
-                else:
-                    self.led_off(index)
-                    # display leds on column
+                led_handle(i)
 
     def led_on(self, index):
-        self.pixels.set_pixel_rgb(index, self._colorer.r, self._colorer.g, self._colorer.b)
+        self._pixels.set_pixel_rgb(index, self._colorer.r, self._colorer.g, self._colorer.b)
 
     def led_off(self, index):
-        self.pixels.set_pixel_rgb(index, 0, 0, 0)
+        self._pixels.set_pixel_rgb(index, 0, 0, 0)
 
 
 class LedColorer:

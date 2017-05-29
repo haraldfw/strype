@@ -25,7 +25,7 @@ class Config:
         self.decay = c['decay']
         self.colors = ColorConfig(c['color_modes'])
         self.active_color_mode = c['active_color_mode']
-        self.color_tick_mode = c['color_tick_mode']
+        self.tick_per_led = c['tick_per_led']
         self.config_update_interval = c['config_update_interval']
 
     def update(self):
