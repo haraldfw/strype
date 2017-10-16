@@ -1,0 +1,40 @@
+led:
+  amount: 160
+  bar-amount: 16
+  bar-length: 10
+  spacer-length: 0
+
+audio:
+  device-index: 1
+  channels: 2
+  rate: 44100
+  chunk-size: 1024
+  min-freq: 150
+  max-freq: 5000
+
+viz:
+  decay: 0.9
+  colors:
+    tick_per_led: 0
+    tick_per_time: 1
+    tick_per_column: 0
+    active-mode: static
+    modes:
+      static:
+        - 0
+        - 127
+        - 255
+      rainbow:
+        rate: 0.01
+        lightness: 0.5
+        saturation: 1
+      fade:
+        - - 255
+          - 0
+          - 0
+        - - 0
+          - 255
+          - 0
+        - - 0
+          - 0
+          - 255

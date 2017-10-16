@@ -1,41 +1,65 @@
-import pyaudio
+import signal
+import sys
 
+import yaml
+from logzero import logger
+
+from ada_led_controller import LEDController
 from audio import Audio
 from audio_analysis import Analyzer
-from config import Config
-from plotter import Plotter
 from prettyfier import Prettyfier
 
-analyzer = None
-audio = None
-pretty = None
+
+def read_config():
+    with open('config.yml') as f:
+        return yaml.load(f.read())
+
+
+class Master:
+    def __init__(self):
+        cfg = read_config()
+        audio_cfg = cfg['audio']
+        led_cfg = cfg['led']
+        viz_cfg = cfg['viz']
+        self.audio = Audio(audio_cfg['channels'], audio_cfg['rate'], audio_cfg['chunk-size'], audio_cfg['device-index'])
+        self.analyzer = Analyzer(led_cfg['bar-amount'], audio_cfg['rate'], audio_cfg['chunk-size'],
+                                 audio_cfg['min-freq'],
+                                 audio_cfg['max-freq'])
+        self.pretty = Prettyfier(led_cfg['bar-amount'], viz_cfg['decay'])
+        self.led_controller = LEDController(
+            led_cfg['amount'], led_cfg['bar-amount'], led_cfg['bar-length'], led_cfg['spacer-length'])
+
+    def run(self):
+        while 1:
+            heights = self.get_parsed_data()
+            # print(heights)
+            self.led_controller.update(heights)
+
+    def get_parsed_data(self):
+        data = self.analyzer.analyze(self.audio.read())
+        self.pretty.update_heights(data)
+        return self.pretty.get_heights()
+
+    def close(self):
+        self.audio.close()
+
+
+master = None
 
 
 def main():
-    global audio, analyzer, pretty
-    config = Config()
-    config.start_scheduled_updates()
-
-    p = pyaudio.PyAudio()
-    for i in range(p.get_device_count()):
-        print(p.get_device_info_by_index(i))
-
-    audio = Audio(config)
-    analyzer = Analyzer(config)
-    pretty = Prettyfier(config)
-
-    Plotter(get_parsed_data, config).start()
-
-    # done
-    audio.close()
+    global master
+    master = Master()
+    master.run()
 
 
-def get_parsed_data():
-    global audio, analyzer, pretty
-    data = analyzer.analyze(audio.read())
-    pretty.update_heights(data)
-    return pretty.get_heights()
+def signal_handler():
+    logger.info('User called exit. Exiting...')
+    master.close()
+    sys.exit(0)
 
 
 if __name__ == '__main__':
+    logger.info('Starting Strype audio visualizer')
+    signal.signal(signal.SIGINT, signal_handler)
     main()

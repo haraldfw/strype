@@ -1,0 +1,5 @@
+pyaudio
+logzero
+PyYAML
+Adafruit_WS2801
+numpy

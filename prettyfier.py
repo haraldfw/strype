@@ -1,12 +1,10 @@
 class Prettyfier:
     _columns = []
+    _decay = 1
 
-    def __init__(self, config):
-        """
-         :type config: config.Config
-        """
-        self._config = config
-        self._columns = [0] * self._config.bars
+    def __init__(self, bars, decay):
+        self._columns = [0] * bars
+        self._decay = decay
 
     def update_heights(self, data):
         i = 0
@@ -18,7 +16,7 @@ class Prettyfier:
             elif height > 1.0:
                 height = 1.0
             if height < self._columns[i]:
-                self._columns[i] = self._columns[i] * self._config.decay
+                self._columns[i] = self._columns[i] * self._decay
             else:
                 self._columns[i] = height
             i += 1
