@@ -1,6 +1,8 @@
+import argparse
 import signal
 import sys
 
+import pyaudio
 import yaml
 from logzero import logger
 
@@ -47,8 +49,9 @@ class Master:
 master = None
 
 
-def main():
+def start_analyzer():
     global master
+    logger.info('Starting Strype audio visualizer')
     master = Master()
     master.run()
 
@@ -59,7 +62,32 @@ def signal_handler():
     sys.exit(0)
 
 
+def list_devices(args_given):
+    detail = args_given.detail
+    p = pyaudio.PyAudio()
+    for i in range(p.get_device_count()):
+        device = p.get_device_info_by_index(i)
+        if not detail:
+            device = {k: v for k, v in device.items() if
+                      k in ['index', 'name', 'maxInputChannels', 'maxOutputChannels']}
+        print(device)
+
+
+def get_args():
+    parser = argparse.ArgumentParser(description='Strype: Audio spectrum analyzer and visualizer.')
+    parser.add_argument('-c', '--config', default='~/.config/strype/config.yml', dest='config_path',
+                        help='Set the pull path for the config file.')
+    parser.add_argument('-l', '--list-devices', dest='list_devices', action='store_true',
+                        help='Lists available audio devices')
+    parser.add_argument('-d', '--detail', dest='detail', action='store_true',
+                        help='Makes list-devices output all details')
+    return parser.parse_args()
+
+
 if __name__ == '__main__':
-    logger.info('Starting Strype audio visualizer')
     signal.signal(signal.SIGINT, signal_handler)
-    main()
+    args = get_args()
+    if args.list_devices:
+        list_devices(args)
+    else:
+        start_analyzer()
