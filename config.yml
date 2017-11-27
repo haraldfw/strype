@@ -5,7 +5,7 @@ led:
   spacer-length: 0
 
 audio:
-  device-index: 1
+  device-index: 0
   channels: 2
   rate: 44100
   chunk-size: 1024

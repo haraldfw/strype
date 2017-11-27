@@ -6,10 +6,23 @@ import pyaudio
 import yaml
 from logzero import logger
 
-from ada_led_controller import LEDController
-from audio import Audio
-from audio_analysis import Analyzer
-from prettyfier import Prettyfier
+import ada_led_controller  as led_controller
+import audio
+import audio_analysis as analyzer
+import prettyfier as pretty
+
+
+def init():
+    cfg = read_config()
+    audio_cfg = cfg['audio']
+    led_cfg = cfg['led']
+    viz_cfg = cfg['viz']
+    audio.init(audio_cfg['channels'], audio_cfg['rate'], audio_cfg['chunk-size'], audio_cfg['device-index'])
+    analyzer.init(led_cfg['bar-amount'], audio_cfg['rate'], audio_cfg['chunk-size'],
+                  audio_cfg['min-freq'],
+                  audio_cfg['max-freq'])
+    pretty.init(led_cfg['bar-amount'], viz_cfg['decay'])
+    led_controller.init(led_cfg['amount'], led_cfg['bar-amount'], led_cfg['bar-length'], led_cfg['spacer-length'])
 
 
 def read_config():
@@ -17,48 +30,28 @@ def read_config():
         return yaml.load(f.read())
 
 
-class Master:
-    def __init__(self):
-        cfg = read_config()
-        audio_cfg = cfg['audio']
-        led_cfg = cfg['led']
-        viz_cfg = cfg['viz']
-        self.audio = Audio(audio_cfg['channels'], audio_cfg['rate'], audio_cfg['chunk-size'], audio_cfg['device-index'])
-        self.analyzer = Analyzer(led_cfg['bar-amount'], audio_cfg['rate'], audio_cfg['chunk-size'],
-                                 audio_cfg['min-freq'],
-                                 audio_cfg['max-freq'])
-        self.pretty = Prettyfier(led_cfg['bar-amount'], viz_cfg['decay'])
-        self.led_controller = LEDController(
-            led_cfg['amount'], led_cfg['bar-amount'], led_cfg['bar-length'], led_cfg['spacer-length'])
-
-    def run(self):
-        while 1:
-            heights = self.get_parsed_data()
-            # print(heights)
-            self.led_controller.update(heights)
-
-    def get_parsed_data(self):
-        data = self.analyzer.analyze(self.audio.read())
-        self.pretty.update_heights(data)
-        return self.pretty.get_heights()
-
-    def close(self):
-        self.audio.close()
+def run():
+    while 1:
+        data = analyzer.analyze(audio.read())
+        # logger.info(data)
+        pretty.update_heights(data)
+        # print(pretty.columns)
+        led_controller.update(pretty.columns)
 
 
-master = None
+def close():
+    audio.close()
 
 
 def start_analyzer():
-    global master
     logger.info('Starting Strype audio visualizer')
-    master = Master()
-    master.run()
+    init()
+    run()
 
 
-def signal_handler():
+def signal_handler(a, b):
     logger.info('User called exit. Exiting...')
-    master.close()
+    close()
     sys.exit(0)
 
 
