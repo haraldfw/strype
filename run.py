@@ -35,7 +35,7 @@ def run():
         data = analyzer.analyze(audio.read())
         # logger.info(data)
         pretty.update_heights(data)
-        # print(pretty.columns)
+        print(pretty.columns)
         led_controller.update(pretty.columns)
 
 

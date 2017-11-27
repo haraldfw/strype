@@ -9,7 +9,6 @@ def init(bars, decay_par):
 
 
 def update_heights(data):
-    print(data)
     for i, height in enumerate(data):
         height -= 8.0
         height /= 5

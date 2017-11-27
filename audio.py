@@ -1,5 +1,6 @@
-import pyaudio
 import sys
+
+import pyaudio
 from logzero import logger
 
 _stream = None

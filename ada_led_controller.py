@@ -1,8 +1,7 @@
 from __future__ import division
 
-import numpy
-
 import Adafruit_WS2801
+import numpy
 
 _led_count = 160
 _leds = None
