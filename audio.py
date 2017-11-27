@@ -31,7 +31,6 @@ def init(channels, rate, chunk_size, audio_device_index):
 
 def read():
     data = _stream.read(_chunk_size, exception_on_overflow=False)
-    # print(data)
     return data
 
 

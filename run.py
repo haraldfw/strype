@@ -1,8 +1,10 @@
 import argparse
 import signal
 import sys
+from threading import Thread
 
 import pyaudio
+import time
 import yaml
 from logzero import logger
 
@@ -22,7 +24,8 @@ def init():
                   audio_cfg['min-freq'],
                   audio_cfg['max-freq'])
     pretty.init(led_cfg['bar-amount'], viz_cfg['decay'])
-    led_controller.init(led_cfg['amount'], led_cfg['bar-amount'], led_cfg['bar-length'], led_cfg['spacer-length'])
+    led_controller.init(led_cfg['amount'], led_cfg['bar-amount'], led_cfg['bar-length'], led_cfg['spacer-length'],
+                        viz_cfg['colors'])
 
 
 def read_config():
@@ -31,11 +34,9 @@ def read_config():
 
 
 def run():
-    while 1:
+    while True:
         data = analyzer.analyze(audio.read())
-        # logger.info(data)
         pretty.update_heights(data)
-        print(pretty.columns)
         led_controller.update(pretty.columns)
 
 
@@ -51,6 +52,7 @@ def start_analyzer():
 
 def signal_handler(a, b):
     logger.info('User called exit. Exiting...')
+    led_controller.clear()
     close()
     sys.exit(0)
 

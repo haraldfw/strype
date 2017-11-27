@@ -1,7 +1,6 @@
 from __future__ import division
 
 import Adafruit_WS2801
-import numpy
 
 _led_count = 160
 _leds = None
@@ -9,9 +8,14 @@ _spacer_length = -1
 _bar_length = -1
 _bar_amount = -1
 
+col_static_r = 255
+col_static_g = 255
+col_static_b = 255
 
-def init(led_count, bar_amount, bar_length, spacer_length, pin_clock=18, pin_dout=23):
-    global _led_count, _leds, _spacer_length, _bar_length, _bar_amount
+
+def init(led_count, bar_amount, bar_length, spacer_length, col_cfg, pin_clock=18, pin_dout=23):
+    global _led_count, _leds, _spacer_length, _bar_length, _bar_amount, col_static_r, col_static_g, col_static_b, \
+        color_func
     _led_count = led_count
 
     _leds = Adafruit_WS2801.WS2801Pixels(led_count, clk=pin_clock, do=pin_dout)
@@ -23,13 +27,23 @@ def init(led_count, bar_amount, bar_length, spacer_length, pin_clock=18, pin_dou
     _bar_length = bar_length
     _bar_amount = bar_amount
 
+    col_static_r = col_cfg['modes']['static']['r']
+    col_static_g = col_cfg['modes']['static']['g']
+    col_static_b = col_cfg['modes']['static']['b']
 
-def set_led(coordinate, color):
-    _leds.set_pixel(coordinate, color)
+    color_func = get_static_color
 
 
-def set_led_rgb(n, r, g, b):
-    _leds.set_pixel_rgb(n, r, g, b)
+def get_static_color():
+    return col_static_r, col_static_g, col_static_b
+
+
+color_func = get_static_color
+
+
+def set_led_rgb(n):
+    c = color_func()
+    _leds.set_pixel_rgb(n, c[0], c[2], c[1])
 
 
 def show():
@@ -42,14 +56,14 @@ def clear():
 
 def update(heights):
     clear()
-    # if len(heights) != _bar_amount:
-    #     logger.error('CONFIGURATION INCONSISTENCY: Length of given heights array is not equal '
-    #                    'to the defined amount of bars. Returning...')
-    #     return
-    c = numpy.amax(heights)
-    c = numpy.floor(c * _led_count)
-    # print(c)
 
-    for i in range(numpy.int(c)):
-        set_led_rgb(i, 10, 10, 10)
+    shift = 0
+    for h in heights:
+        height = h * _bar_length
+
+        for i in range(_bar_length):
+            if i < height:
+                set_led_rgb(i + shift)
+        shift += _bar_length + _spacer_length
+
     show()
