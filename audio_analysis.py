@@ -1,4 +1,5 @@
-import numpy as np
+from numpy import *
+from rpi_audio_levels import AudioLevels
 
 _rate = None
 _min_frequency = None
@@ -6,51 +7,55 @@ _chunk_size = None
 _max_frequency = None
 _bars = 0
 _frequency_limits = None
+_audio_levels = None
+_piff = None
 
 
 def init(bars, rate, chunk_size, min_frequency, max_frequency):
-    global _rate, _min_frequency, _chunk_size, _max_frequency, _bars, _frequency_limits
+    global _rate, _min_frequency, _chunk_size, _max_frequency, _bars, _frequency_limits, _audio_levels, _piff
     _rate = rate
     _min_frequency = min_frequency
     _chunk_size = chunk_size
     _max_frequency = max_frequency
     _bars = bars
     _frequency_limits = calculate_channel_frequencies()
+    _audio_levels = AudioLevels(math.log(chunk_size / 2, 2), len(_frequency_limits))
+
+    fl = array(_frequency_limits)
+    _piff = ((fl * chunk_size) / _rate).astype(int)
+    for a in range(len(_piff)):
+        if _piff[a][0] == _piff[a][1]:
+            _piff[a][1] += 1
+    _piff = _piff.tolist()
 
 
 def analyze(data):
-    """
-    Code inspired by:
-     https://github.com/sethshill/sdp/blob/master/synchronized_lights_led_strip.py
-    """
-    data_stereo = np.fromstring(data, dtype=np.int16)
-    data = np.empty(len(data) // 4)  # data has two channels and 2 bytes per channel
-    data[:] = data_stereo[::2]  # pull out the even values, just using one channel
+    """Calculate frequency response for each channel defined in frequency_limits
 
-    window = np.hanning(len(data))
+        :param data: decoder.frames(), audio data for fft calculations
+        :type data: decoder.frames
+
+        :return:
+        :rtype: numpy.array
+        """
+    # create a numpy array, taking just the left channel if stereo
+    data_stereo = frombuffer(data, dtype=int16)
+    data = array(data_stereo[::2])
+
+    # if you take an FFT of a chunk of audio, the edges will look like
+    # super high frequency cutoffs. Applying a window tapers the edges
+    # of each end of the chunk down to zero.
+    window = hanning(len(data)).astype(float32)
+
     data = data * window
 
-    # Apply FFT - real data
-    fourier = np.fft.rfft(data)
+    # if all zeros in data then there is no need to do the fft
+    if all(data == 0.0):
+        return zeros(len(data), dtype=float32), False
 
-    # Remove last element in array to make it the same size as chunk size
-    fourier = np.delete(fourier, len(fourier) - 1)
-
-    power = np.power(np.abs(fourier), 2)
-
-    matrix = np.zeros(_bars, dtype=np.float16)
-    for i in range(_bars):
-        # take the log10 of the resulting sum to approximate human hearing
-        p1 = piff(_frequency_limits[i][0], _rate)
-        p2 = piff(_frequency_limits[i][1], _rate)
-        sums = np.sum(power[p1:p2:1])
-        matrix[i] = np.log10(sums)
-
-    return matrix
-
-
-def piff(val, sample_rate):
-    return int(float(_chunk_size) * val / sample_rate)
+    levels, means, stds = _audio_levels.compute(data, _piff)
+    print(levels)
+    return levels, True
 
 
 def calculate_channel_frequencies():
@@ -64,7 +69,7 @@ def calculate_channel_frequencies():
     max_frequency = _max_frequency
 
     print("Calculating frequencies for %d channels." % bars)
-    octaves = (np.log(max_frequency / min_frequency)) / np.log(2)
+    octaves = (log(max_frequency / min_frequency)) / log(2)
     print("octaves in selected frequency range ... %s" % octaves)
     octaves_per_channel = octaves / bars
     frequency_limits = []
@@ -79,5 +84,4 @@ def calculate_channel_frequencies():
         f2 = frequency_limits[i + 1]
         frequency_store.append((f1, f2))
         print("channel %d is %6.2f to %6.2f " % (i, f1, f2))
-
     return frequency_store

@@ -1,10 +1,8 @@
 import argparse
 import signal
 import sys
-from threading import Thread
 
 import pyaudio
-import time
 import yaml
 from logzero import logger
 
@@ -35,9 +33,11 @@ def read_config():
 
 def run():
     while True:
-        data = analyzer.analyze(audio.read())
-        pretty.update_heights(data)
+        data, parse = analyzer.analyze(audio.read())
+        if parse:
+            pretty.update_heights(data)
         led_controller.update(pretty.columns)
+        # time.sleep(0.1)
 
 
 def close():
@@ -51,9 +51,13 @@ def start_analyzer():
 
 
 def signal_handler(a, b):
-    logger.info('User called exit. Exiting...')
+    logger.info('User called exit...')
     led_controller.clear()
+    led_controller.show()
+    logger.info('LEDs reset')
     close()
+    logger.info('Audio stream closed')
+    logger.info('Exited')
     sys.exit(0)
 
 

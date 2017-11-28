@@ -5,10 +5,10 @@ led:
   spacer-length: 4
 
 audio:
-  device-index: 1
+  device-index: auto
   channels: 2
   rate: 44100
-  chunk-size: 1024
+  chunk-size: 2048
   min-freq: 150
   max-freq: 20000
 
