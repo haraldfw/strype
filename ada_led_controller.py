@@ -1,6 +1,7 @@
-from __future__ import division
-
 import Adafruit_WS2801
+import math
+
+from Adafruit_GPIO import SPI
 
 _led_count = 160
 _leds = None
@@ -13,12 +14,15 @@ col_static_g = 255
 col_static_b = 255
 
 
-def init(led_count, bar_amount, bar_length, spacer_length, col_cfg, pin_clock=18, pin_dout=23):
+bar_indexes = []
+
+
+def init(led_count, bar_amount, bar_length, spacer_length, col_cfg):
     global _led_count, _leds, _spacer_length, _bar_length, _bar_amount, col_static_r, col_static_g, col_static_b, \
-        color_func
+        color_func, bar_indexes
     _led_count = led_count
 
-    _leds = Adafruit_WS2801.WS2801Pixels(led_count, clk=pin_clock, do=pin_dout)
+    _leds = Adafruit_WS2801.WS2801Pixels(led_count, spi=SPI.SpiDev(0, 0))
 
     _leds.clear()
     _leds.show()
@@ -32,6 +36,19 @@ def init(led_count, bar_amount, bar_length, spacer_length, col_cfg, pin_clock=18
     col_static_b = col_cfg['modes']['static']['b']
 
     color_func = get_static_color
+
+    bar_indexes = []
+    shift_indexes = []
+    flip = False
+    shift = 0
+    for b in range(bar_amount):
+        ixs = [i + shift for i in range(bar_length)]
+        shift += _bar_length + _spacer_length
+        if flip:
+            ixs = [i for i in reversed(ixs)]
+        bar_indexes.append(ixs)
+        flip = not flip
+    # print(bar_indexes)
 
 
 def get_static_color():
@@ -57,13 +74,9 @@ def clear():
 def update(heights):
     clear()
 
-    shift = 0
-    for h in heights:
-        height = h * _bar_length
-
-        for i in range(_bar_length):
-            if i < height:
-                set_led_rgb(i + shift)
-        shift += _bar_length + _spacer_length
-
+    for i, bar in enumerate(bar_indexes):
+        height = heights[i] * _bar_length
+        for j, k in enumerate(bar):
+            if j < height:
+                set_led_rgb(k)
     show()

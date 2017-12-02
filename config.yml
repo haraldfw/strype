@@ -9,11 +9,11 @@ audio:
   channels: 2
   rate: 44100
   chunk-size: 2048
-  min-freq: 150
-  max-freq: 20000
+  min-freq: 32
+  max-freq: 16000
 
 viz:
-  decay: 0.8
+  decay: 0.955
   colors:
     tick_per_led: 0
     tick_per_time: 1

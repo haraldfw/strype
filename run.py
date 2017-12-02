@@ -33,11 +33,9 @@ def read_config():
 
 def run():
     while True:
-        data, parse = analyzer.analyze(audio.read())
-        if parse:
-            pretty.update_heights(data)
-        led_controller.update(pretty.columns)
-        # time.sleep(0.1)
+        data = analyzer.analyze(audio.read())
+        pretty.update_heights(data)
+        led_controller.update(pretty._columns)
 
 
 def close():

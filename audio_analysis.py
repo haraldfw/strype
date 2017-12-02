@@ -51,11 +51,10 @@ def analyze(data):
 
     # if all zeros in data then there is no need to do the fft
     if all(data == 0.0):
-        return zeros(len(data), dtype=float32), False
+        return zeros(len(_piff), dtype=float32)
 
     levels, means, stds = _audio_levels.compute(data, _piff)
-    print(levels)
-    return levels, True
+    return levels
 
 
 def calculate_channel_frequencies():
