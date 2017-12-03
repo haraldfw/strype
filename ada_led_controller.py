@@ -63,12 +63,15 @@ def get_static_color():
 color_func = get_static_color
 
 
-def set_led(n, invert=False, rotate=False):
+def set_led(n, invert=False, rotate=False, scale=1):
     c = color_func()
     if invert:
         c = [255 - c[0], 255 - c[1], 255 - c[2]]
     if rotate:
         c = c[1:]+c[:1]
+
+    c = [int(r * scale) for r in c]
+
     _leds.set_pixel_rgb(n, c[0], c[2], c[1])
 
 
@@ -101,25 +104,21 @@ def _update_spacers(heights):
                 set_led(j, invert=invert, rotate=rotate)
 
 
-def _update_spacers2(heights):
-    fourths = _bar_amount // 4
-    low = numpy.average(heights[:fourths]) > 0.8
-    high = numpy.average(heights[_bar_amount - fourths:]) > 0.65
-
+def _update_spacers2(spacers):
     half = _bar_amount // 2
-    if low:
-        for ixs in spacer_indexes[:half]:
-            for i in ixs:
-                set_led(i, invert=True)
-    if high:
-        for ixs in spacer_indexes[half:]:
-            for i in ixs:
-                set_led(i, rotate=True)
+
+    for ixs in spacer_indexes[:half]:
+        for i in ixs:
+            set_led(i, invert=True, scale=spacers[1])
+
+    for ixs in spacer_indexes[half:]:
+        for i in ixs:
+            set_led(i, rotate=True, scale=spacers[0])
                 
                 
-def update(heights):
+def update(heights, spacers):
     clear()
-    _update_spacers2(heights)
+    _update_spacers2(spacers)
 
     for i, bar in enumerate(bar_indexes):
         height = heights[i] * _bar_length

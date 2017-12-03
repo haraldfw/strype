@@ -42,7 +42,7 @@ def run():
     while True:
         data = analyzer.analyze(audio.read())
         pretty.update_heights(data)
-        led_controller.update(pretty._columns)
+        led_controller.update(pretty.columns, pretty.spacers)
 
 
 def close():
@@ -52,6 +52,7 @@ def close():
 def start_analyzer():
     logger.info('Starting Strype audio visualizer')
     init()
+    logger.info('Initialization complete')
     run()
 
 
