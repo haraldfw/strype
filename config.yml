@@ -13,7 +13,7 @@ audio:
   max-freq: 16000
 
 viz:
-  decay: 0.955
+  decay: 0.965
   colors:
     tick_per_led: 0
     tick_per_time: 1
@@ -22,8 +22,8 @@ viz:
     modes:
       static:
         r: 0
-        g: 255
-        b: 0
+        g: 0
+        b: 255
       rainbow:
         rate: 0.01
         lightness: 0.5

@@ -1,3 +1,4 @@
+from logzero import logger
 from numpy import *
 from rpi_audio_levels import AudioLevels
 
@@ -8,7 +9,7 @@ _max_frequency = None
 _bars = 0
 _frequency_limits = None
 _audio_levels = None
-_piff = None
+_piff = []
 
 
 def init(bars, rate, chunk_size, min_frequency, max_frequency):
@@ -67,9 +68,9 @@ def calculate_channel_frequencies():
     min_frequency = _min_frequency
     max_frequency = _max_frequency
 
-    print("Calculating frequencies for %d channels." % bars)
+    logger.debug("Calculating frequencies for %d channels." % bars)
     octaves = (log(max_frequency / min_frequency)) / log(2)
-    print("octaves in selected frequency range ... %s" % octaves)
+    logger.debug("octaves in selected frequency range ... %s" % octaves)
     octaves_per_channel = octaves / bars
     frequency_limits = []
     frequency_store = []
@@ -82,5 +83,5 @@ def calculate_channel_frequencies():
         f1 = frequency_limits[i]
         f2 = frequency_limits[i + 1]
         frequency_store.append((f1, f2))
-        print("channel %d is %6.2f to %6.2f " % (i, f1, f2))
+        logger.debug("channel %d is %6.2f to %6.2f " % (i, f1, f2))
     return frequency_store

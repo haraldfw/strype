@@ -2,14 +2,17 @@ import argparse
 import signal
 import sys
 
+import logging
+import logzero
 import pyaudio
 import yaml
 from logzero import logger
 
-import ada_led_controller  as led_controller
+import ada_led_controller as led_controller
 import audio
 import audio_analysis as analyzer
 import prettyfier as pretty
+from error import StrypeException
 
 
 def init():
@@ -17,13 +20,17 @@ def init():
     audio_cfg = cfg['audio']
     led_cfg = cfg['led']
     viz_cfg = cfg['viz']
-    audio.init(audio_cfg['channels'], audio_cfg['rate'], audio_cfg['chunk-size'], audio_cfg['device-index'])
-    analyzer.init(led_cfg['bar-amount'], audio_cfg['rate'], audio_cfg['chunk-size'],
-                  audio_cfg['min-freq'],
-                  audio_cfg['max-freq'])
-    pretty.init(led_cfg['bar-amount'], viz_cfg['decay'])
-    led_controller.init(led_cfg['amount'], led_cfg['bar-amount'], led_cfg['bar-length'], led_cfg['spacer-length'],
-                        viz_cfg['colors'])
+    try:
+        audio.init(audio_cfg['channels'], audio_cfg['rate'], audio_cfg['chunk-size'], audio_cfg['device-index'])
+        analyzer.init(led_cfg['bar-amount'], audio_cfg['rate'], audio_cfg['chunk-size'],
+                      audio_cfg['min-freq'],
+                      audio_cfg['max-freq'])
+        pretty.init(led_cfg['bar-amount'], viz_cfg['decay'])
+        led_controller.init(led_cfg['amount'], led_cfg['bar-amount'], led_cfg['bar-length'], led_cfg['spacer-length'],
+                            viz_cfg['colors'])
+    except StrypeException as e:
+        logger.error(e)
+        sys.exit(1)
 
 
 def read_config():
@@ -77,13 +84,15 @@ def get_args():
     parser.add_argument('-l', '--list-devices', dest='list_devices', action='store_true',
                         help='Lists available audio devices')
     parser.add_argument('-d', '--detail', dest='detail', action='store_true',
-                        help='Makes list-devices output all details')
+                        help='Sets logging level to debug. And makes \'list-devices\' output all details')
     return parser.parse_args()
 
 
 if __name__ == '__main__':
     signal.signal(signal.SIGINT, signal_handler)
     args = get_args()
+    if not args.detail:
+        logzero.loglevel(logging.INFO)
     if args.list_devices:
         list_devices(args)
     else:
