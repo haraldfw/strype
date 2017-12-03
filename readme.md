@@ -1,3 +1,5 @@
+See complete configuration on the [wiki](https://github.com/haraldfw/strype/wiki).
+
 # Configuration
 
 To let strype read your audio output you have to set up a loopback interface in alsa. 
