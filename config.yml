@@ -1,8 +1,9 @@
 led:
-  amount: 160
-  bar-amount: 10
-  bar-length: 12
-  spacer-length: 4
+  amount: 300
+  bar-amount: 5
+  bar-length: 60
+  spacer-length: 0
+  flip: true
 
 audio:
   device-index: auto

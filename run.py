@@ -8,7 +8,7 @@ import pyaudio
 import yaml
 from logzero import logger
 
-import ada_led_controller as led_controller
+import led_controller
 import audio
 import audio_analysis as analyzer
 import prettyfier as pretty
@@ -27,7 +27,7 @@ def init():
                       audio_cfg['max-freq'])
         pretty.init(led_cfg['bar-amount'], viz_cfg['decay'])
         led_controller.init(led_cfg['amount'], led_cfg['bar-amount'], led_cfg['bar-length'], led_cfg['spacer-length'],
-                            viz_cfg['colors'])
+                            led_cfg, viz_cfg['colors'])
     except StrypeException as e:
         logger.error(e)
         sys.exit(1)

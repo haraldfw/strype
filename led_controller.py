@@ -1,11 +1,10 @@
-import Adafruit_WS2801
 import numpy
 from logzero import logger
 
-from Adafruit_GPIO import SPI
+import ws281x_driver as driver
 
 _led_count = 160
-_leds = None
+_leds = None  # type: driver
 _spacer_length = -1
 _bar_length = -1
 _bar_amount = -1
@@ -18,12 +17,13 @@ bar_indexes = []
 spacer_indexes = []
 
 
-def init(led_count, bar_amount, bar_length, spacer_length, col_cfg):
+def init(led_count, bar_amount, bar_length, spacer_length, led_cfg, col_cfg):
     global _led_count, _leds, _spacer_length, _bar_length, _bar_amount, col_static_r, col_static_g, col_static_b, \
         color_func, bar_indexes, spacer_indexes
     _led_count = led_count
 
-    _leds = Adafruit_WS2801.WS2801Pixels(led_count, spi=SPI.SpiDev(0, 0))
+    driver.init(led_count, 0)
+    _leds = driver
 
     _leds.clear()
     _leds.show()
@@ -40,7 +40,7 @@ def init(led_count, bar_amount, bar_length, spacer_length, col_cfg):
 
     bar_indexes = []
     spacer_indexes = []
-    flip = True
+    flip = led_cfg['flip']
     shift = 0
     for b in range(bar_amount):
         ixs = [i + shift for i in range(bar_length)]
@@ -68,11 +68,11 @@ def set_led(n, invert=False, rotate=False, scale=1):
     if invert:
         c = [255 - c[0], 255 - c[1], 255 - c[2]]
     if rotate:
-        c = c[1:]+c[:1]
+        c = c[1:] + c[:1]
 
     c = [int(r * scale) for r in c]
 
-    _leds.set_pixel_rgb(n, c[0], c[2], c[1])
+    _leds.set_color(n, c[0], c[1], c[2])
 
 
 def show():
@@ -114,11 +114,12 @@ def _update_spacers2(spacers):
     for ixs in spacer_indexes[half:]:
         for i in ixs:
             set_led(i, rotate=True, scale=spacers[0])
-                
-                
+
+
 def update(heights, spacers):
     clear()
-    _update_spacers2(spacers)
+    if _spacer_length:
+        _update_spacers2(spacers)
 
     for i, bar in enumerate(bar_indexes):
         height = heights[i] * _bar_length
