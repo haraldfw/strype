@@ -3,7 +3,7 @@ led:
   bar-amount: 5
   bar-length: 60
   spacer-length: 0
-  flip: true
+  flip: false
 
 audio:
   device-index: auto
@@ -16,26 +16,18 @@ audio:
 viz:
   decay: 0.965
   colors:
-    tick_per_led: 0
-    tick_per_time: 1
-    tick_per_column: 0
-    active-mode: static
+    active-mode: strength
     modes:
       static:
         r: 0
         g: 0
         b: 255
+      strength:
+        low: 0.472
+        high: 0.777
+        saturation: 1
+        value: 1
       rainbow:
         rate: 0.01
         lightness: 0.5
         saturation: 1
-      fade:
-        - - 255
-          - 0
-          - 0
-        - - 0
-          - 255
-          - 0
-        - - 0
-          - 0
-          - 255

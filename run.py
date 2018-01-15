@@ -26,8 +26,7 @@ def init():
                       audio_cfg['min-freq'],
                       audio_cfg['max-freq'])
         pretty.init(led_cfg['bar-amount'], viz_cfg['decay'])
-        led_controller.init(led_cfg['amount'], led_cfg['bar-amount'], led_cfg['bar-length'], led_cfg['spacer-length'],
-                            led_cfg, viz_cfg['colors'])
+        led_controller.init(cfg)
     except StrypeException as e:
         logger.error(e)
         sys.exit(1)
